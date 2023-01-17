@@ -6,13 +6,20 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 import pymysql
 
 # 함수
-def f(index, x:str):
-    if x == " ":return
+def f(index:int, x:str):
+    if x == " " : return ""
     else : return f"`col{index}` = '{x}', "
 
+def f2(tds:list[WebElement]):
+    sql = "insert into `weather` set "
+    for i in range(1, 14):
+        sql += f(i, tds[i-1].text)
+    sql += "`rdate` = NOW()"
+    return sql
 
 # 데이터 베이스 접속
 conn = pymysql.connect(
@@ -40,39 +47,8 @@ trs = browser.find_elements(By.CSS_SELECTOR, '#weather_table > tbody > tr')
 for tr in trs:
     tds = tr.find_elements(By.CSS_SELECTOR, 'td')
 
-    sql = "insert into `weather` set "
-    sql += f(1, tds[0].text)
-    sql += f(2, tds[1].text)
-    sql += f(3, tds[2].text)
-    sql += f(4, tds[3].text)
-    sql += f(5, tds[4].text)
-    sql += f(6, tds[5].text)
-    sql += f(7, tds[6].text)
-    sql += f(8, tds[7].text)
-    sql += f(9, tds[8].text)
-    sql += f(10, tds[9].text)
-    sql += f(11, tds[10].text)
-    sql += f(12, tds[11].text)
-    sql += f(13, tds[12].text)
-    sql += f(14, tds[13].text)
-    #sql += f"`col1` = '{tds[0].text}',"
-    #sql += f"`col2` = '{tds[1].text}',"
-    #sql += f"`col3` = '{tds[2].text}',"
-    #if tds[3].text != " ": sql += f"`col4` = '{tds[3].text}',"
-    #if tds[4].text != " ": sql += f"`col5` = '{tds[4].text}',"
-    #if tds[5].text != " ": sql += f"`col6` = '{tds[5].text}',"
-    #if tds[6].text != " ": sql += f"`col7` = '{tds[6].text}',"
-    #if tds[7].text != " ": sql += f"`col8` = '{tds[7].text}',"
-    #if tds[8].text != " ": sql += f"`col9` = '{tds[8].text}',"
-    #if tds[9].text != " ": sql += f"`col10` = '{tds[9].text}',"
-    #if tds[10].text != " ": sql += f"`col11` = '{tds[10].text}',"
-    #sql += f"`col12` = '{tds[11].text}',"
-    #if tds[11].text != " ": sql += f"`col13` = '{tds[12].text}',"
-    #if tds[12].text != " ": sql += f"`col14` = '{tds[13].text}',"
-    sql += "`rdate` = NOW()"
-
     # SQL 실행
-    cur.execute(sql)
+    cur.execute(f2(tds))
 
 # 커밋
 conn.commit()
