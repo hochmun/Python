@@ -10,14 +10,11 @@ from selenium.webdriver.remote.webelement import WebElement
 import pymysql
 
 # 함수
-def f(index:int, x:str):
-    if x == " " : return ""
-    else : return f"`col{index}` = '{x}', "
+def f(index:int, x:str) : return "" if x == " " else f"`col{index}` = '{x}', "
 
-def f2(tds:list[WebElement]):
+def g(tds:list[WebElement]):
     sql = "insert into `weather` set "
-    for i in range(1, 14):
-        sql += f(i, tds[i-1].text)
+    for i in range(1, 14) : sql += f(i, tds[i-1].text)
     sql += "`rdate` = NOW()"
     return sql
 
@@ -41,16 +38,13 @@ browser = webdriver.Chrome('./chromedriver.exe', options=chrome_options)
 # 페이지 이동
 browser.get('https://www.weather.go.kr/w/obs-climate/land/city-obs.do')
 
-# 지역명 출력
+# 테이블에서 정보 가져오기
 trs = browser.find_elements(By.CSS_SELECTOR, '#weather_table > tbody > tr')
 
-for tr in trs:
-    tds = tr.find_elements(By.CSS_SELECTOR, 'td')
+# 각 tr 마다 SQL 실행
+for tr in trs : cur.execute(g(tr.find_elements(By.CSS_SELECTOR, 'td')))
 
-    # SQL 실행
-    cur.execute(f2(tds))
-
-# 커밋
+# 한번에 커밋
 conn.commit()
 
 # 프로그램 종료
